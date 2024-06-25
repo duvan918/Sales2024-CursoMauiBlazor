@@ -6,14 +6,14 @@ namespace Sales.WEB.Repositories
     {
         public HttpResponseWrapper(T? response, bool error, HttpResponseMessage httpResponseMessage)
         {
-            Error = error;
             Response = response;
+            Error = error;
             HttpResponseMessage = httpResponseMessage;
         }
 
-        public bool Error { get; set; }
-
         public T? Response { get; set; }
+
+        public bool Error { get; set; }
 
         public HttpResponseMessage HttpResponseMessage { get; set; }
 
