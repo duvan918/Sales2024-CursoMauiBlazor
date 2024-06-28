@@ -1,17 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sales.API.Data;
 using Sales.Shared.Entities;
 
 namespace Sales.API.Controllers
 {
+    //[Route("api/[controller]")]  // Asigna automáticamente el nombre del controlador
+    [Route("api/cities")]  // Asigna manual el nombre del controlador
     [ApiController]
-    [Route("/api/countries")]
-    public class CountriesController : ControllerBase
+    public class CitiesController : ControllerBase
     {
         private readonly DataContext _context;
 
-        public CountriesController(DataContext context)
+        public CitiesController(DataContext context)
         {
             _context = context;
         }
@@ -19,50 +21,36 @@ namespace Sales.API.Controllers
         [HttpGet]
         public async Task<ActionResult> GetAsync()
         {
-            var response = await _context.Countries
-                .Include(x => x.States)     // Equivalente a un Inner Join con la tabla States
-                .ToListAsync();
+            var response = await _context.Cities.ToListAsync();
             return Ok(response);
-        }
-
-        [HttpGet("full")]
-        public async Task<ActionResult> GetFullAsync()
-        {
-            return Ok(await _context.Countries
-            .Include(x => x.States!)        // Equivalente a un Inner Join con la tabla States
-            .ThenInclude(x => x.Cities)     // Equivalente a un Inner Join con la tabla Cities
-            .ToListAsync());
         }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult> GetAsync(int id)
         {
-            var country = await _context.Countries
-                .Include(x => x.States!)     // Equivalente a un Inner Join con la tabla States
-                .ThenInclude (x => x.Cities)
-                .FirstOrDefaultAsync(x => x.Id == id);
-            if (country == null)
+            var city = await _context.Cities.FirstOrDefaultAsync(x => x.Id == id);
+            if (city == null)
             {
                 return NotFound();
             }
 
-            return Ok(country);
+            return Ok(city);
         }
 
         [HttpPost]
-        public async Task<ActionResult> PostAsync(Country country)
+        public async Task<ActionResult> PostAsync(City city)
         {
             try
             {
-                _context.Add(country);
+                _context.Add(city);
                 await _context.SaveChangesAsync();
-                return Ok(country);
+                return Ok(city);
             }
             catch (DbUpdateException dbUpdateException)
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    return BadRequest("Ya existe un país con el mismo nombre.");
+                    return BadRequest("Ya existe una ciudad con el mismo nombre.");
                 }
 
                 return BadRequest(dbUpdateException.Message);
@@ -71,23 +59,23 @@ namespace Sales.API.Controllers
             {
                 return BadRequest(ex.Message);
             }
-        
+
         }
 
         [HttpPut]
-        public async Task<ActionResult> PutAsync(Country country)
+        public async Task<ActionResult> PutAsync(City city)
         {
             try
             {
-                _context.Update(country);
+                _context.Update(city);
                 await _context.SaveChangesAsync();
-                return Ok(country);
+                return Ok(city);
             }
             catch (DbUpdateException dbUpdateException)
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    return BadRequest("Ya existe un país con el mismo nombre.");
+                    return BadRequest("Ya existe una ciudad con el mismo nombre.");
                 }
 
                 return BadRequest(dbUpdateException.Message);
@@ -101,13 +89,13 @@ namespace Sales.API.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> DeleteAsync(int id)
         {
-            var country = await _context.Countries.FirstOrDefaultAsync(x => x.Id == id);
-            if (country == null)
+            var city = await _context.Cities.FirstOrDefaultAsync(x => x.Id == id);
+            if (city == null)
             {
                 return NotFound();
             }
 
-            _context.Remove(country);
+            _context.Remove(city);
             await _context.SaveChangesAsync();
 
             return NoContent();
