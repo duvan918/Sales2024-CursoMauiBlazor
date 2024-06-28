@@ -19,8 +19,19 @@ namespace Sales.API.Controllers
         [HttpGet]
         public async Task<ActionResult> GetAsync()
         {
-            var response = await _context.Countries.ToListAsync();
+            var response = await _context.Countries
+                .Include(x => x.States)     // Equivalente a un Inner Join con la tabla States
+                .ToListAsync();
             return Ok(response);
+        }
+
+        [HttpGet("full")]
+        public async Task<ActionResult> GetFull()
+        {
+            return Ok(await _context.Countries
+            .Include(x => x.States!)        // Equivalente a un Inner Join con la tabla States
+            .ThenInclude(x => x.Cities)     // Equivalente a un Inner Join con la tabla Cities
+            .ToListAsync());
         }
 
         [HttpGet("{id:int}")]
